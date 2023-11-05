@@ -17,6 +17,7 @@ app.use(cors({
   ],
   credentials: true,
 }))
+
 app.use(express.json())
 app.use(cookieParser())
 
@@ -38,7 +39,7 @@ const foodCollection = client.db('HungerHelpNetDB').collection('foodCollection')
 const requestCollection = client.db('HungerHelpNetDB').collection('requestCollection');
 
 
-const verifyToken = (req, res, next) => {
+const verify = (req, res, next) => {
   const token = req.cookies.token
   if (!token) {
     return res.status(401).send({ message: 'Your are not authorized' })
@@ -78,7 +79,7 @@ app.get('/', (req, res) => {
 })
 
 
-app.get('/foods', verifyToken, async (req, res) => {
+app.get('/foods', async (req, res) => {
   try {
 
     const result = await foodCollection.find().toArray()
@@ -92,16 +93,43 @@ app.get('/foods', verifyToken, async (req, res) => {
 })
 
 
+// user specific getting food 
+app.get('/get-food', verify, async (req, res) => {
+  try {
+    const queryEmail = req.query.email;
+    const tokenEmail = req.user.email;
+
+   
+
+    if (queryEmail !== tokenEmail) {
+      return res.status(403).send({ message: 'Forbidden Access' })
+    }
+
+    let query = {}
+    if (queryEmail) {
+      query.email = queryEmail
+    }
+
+    const result = await requestCollection.find(query).toArray()
+
+    console.log('sdfaf',query);
+
+
+    res.send(result)
+  } catch (error) {
+    console.log('getting error from post /request-food', error);
+  }
+})
+
+
 // -----------:: POST Operation ::----------------
 
-app.post('/request-food', verifyToken, async (req, res) => {
+app.post('/request-food', async (req, res) => {
   try {
     const foodRequest = req.body;
     const result = await requestCollection.insertOne(foodRequest)
 
-
     res.send(result)
-
   } catch (error) {
     console.log('getting error from post /request-food', error);
   }
@@ -110,17 +138,16 @@ app.post('/request-food', verifyToken, async (req, res) => {
 
 app.post('/access-token', async (req, res) => {
   try {
-    const user = req.body
-    const token = jwt.sign(user, process.env.SECRET)
-    // console.log(token);
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none'
-    }).send({ success: true })
+      const user = req.body
+      console.log(user);
+      const token = jwt.sign(user, process.env.SECRET, { expiresIn: 360000000 })
+      res.cookie('token', token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none'
+      }).send({ success: true })
   } catch (error) {
-    console.log('getting error from post /access-token'.error);
+      console.log('getting error from post /auth/access-token', error);
   }
 })
 
@@ -134,7 +161,7 @@ app.post('/access-token', async (req, res) => {
 
 // -----------:: DELETE Operation ::----------------
 
-app.delete('/cancel-food/:id', verifyToken, async (req, res) => {
+app.delete('/cancel-food/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) }
