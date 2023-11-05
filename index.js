@@ -82,7 +82,21 @@ app.get('/', (req, res) => {
 app.get('/foods', async (req, res) => {
   try {
 
-    const result = await foodCollection.find().toArray()
+    let query = {}
+    let sortObj = {}
+    const foodName = req.query.foodName;
+    const sortField = req.query.sortField;
+    const sortOrder = req.query.sortOrder;
+
+    if (foodName) {
+      query.foodName = foodName
+    }
+
+    if (sortField && sortOrder) {
+      sortObj[sortField] = sortOrder
+    }
+
+    const result = await foodCollection.find(query).sort(sortObj).toArray()
 
 
     res.send(result)
