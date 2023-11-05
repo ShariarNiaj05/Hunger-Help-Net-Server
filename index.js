@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
@@ -8,15 +9,17 @@ const port = process.env.PORT || 5000;
 
 
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'https://hunger-help-net.web.app',
-        'https://hunger-help-net.firebaseapp.com'
-    ],
-    credentials: true,
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://hunger-help-net.web.app',
+    'https://hunger-help-net.firebaseapp.com'
+  ],
+  credentials: true,
 }))
 app.use(express.json())
+app.use(cookieParser())
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qiowubl.mongodb.net/?retryWrites=true&w=majority`;
@@ -35,14 +38,29 @@ const foodCollection = client.db('HungerHelpNetDB').collection('foodCollection')
 const requestCollection = client.db('HungerHelpNetDB').collection('requestCollection');
 
 
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token
+  if (!token) {
+    return res.status(401).send({ message: 'Your are not authorized' })
+  }
+  jwt.verify(token, process.env.SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: 'Your are not authorized' })
+    }
+    req.user = decoded
+    next()
+  })
+}
+
+
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    
-      
-      // Send a ping to confirm a successful connection
+
+
+    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
@@ -56,18 +74,18 @@ run().catch(console.dir);
 // -----------:: GET Operation ::----------------
 
 app.get('/', (req, res) => {
-    res.send('HungerHelpNet server is running')
+  res.send('HungerHelpNet server is running')
 })
 
 
-app.get('/foods', async (req, res) => {
+app.get('/foods', verifyToken, async (req, res) => {
   try {
 
     const result = await foodCollection.find().toArray()
 
-    
+
     res.send(result)
-    
+
   } catch (error) {
     console.log('getting error from get /food', error);
   }
@@ -76,14 +94,14 @@ app.get('/foods', async (req, res) => {
 
 // -----------:: POST Operation ::----------------
 
-app.post('/request-food', async (req, res) => {
+app.post('/request-food', verifyToken, async (req, res) => {
   try {
     const foodRequest = req.body;
     const result = await requestCollection.insertOne(foodRequest)
 
-    
+
     res.send(result)
-    
+
   } catch (error) {
     console.log('getting error from post /request-food', error);
   }
@@ -92,10 +110,17 @@ app.post('/request-food', async (req, res) => {
 
 app.post('/access-token', async (req, res) => {
   try {
+    const user = req.body
+    const token = jwt.sign(user, process.env.SECRET)
+    // console.log(token);
 
-    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none'
+    }).send({ success: true })
   } catch (error) {
-    console.log('getting error from post /access-token'. error);
+    console.log('getting error from post /access-token'.error);
   }
 })
 
@@ -109,10 +134,10 @@ app.post('/access-token', async (req, res) => {
 
 // -----------:: DELETE Operation ::----------------
 
-app.delete('/cancel-food/:id', async (req, res) => {
+app.delete('/cancel-food/:id', verifyToken, async (req, res) => {
   try {
     const id = req.params.id;
-    const query = {_id: new ObjectId(id)}
+    const query = { _id: new ObjectId(id) }
     const result = await requestCollection.deleteOne(query)
     res.send(result)
 
@@ -126,5 +151,5 @@ app.delete('/cancel-food/:id', async (req, res) => {
 
 
 app.listen(port, () => {
-    console.log(`HungerHelpNet server is running on the port: ${port}`);
+  console.log(`HungerHelpNet server is running on the port: ${port}`);
 })
