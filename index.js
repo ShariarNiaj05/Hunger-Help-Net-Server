@@ -198,7 +198,21 @@ app.post('/access-token', async (req, res) => {
 })
 
 // -----------:: PUT Operation ::----------------
-
+app.put('/add-food/:id', async (req, res) => {
+  const id = req.params.id
+  const body = req.body;
+  const query = { _id: new ObjectId(id) }
+  
+  const updateFood = {
+    $set: {
+      ...body
+    }
+  }
+  const option = {upsert: true}
+  const result = await foodCollection.updateOne(query, updateFood, option)
+  console.log(result);
+  res.send(result)
+})
 
 
 // -----------:: PATCH Operation ::----------------
