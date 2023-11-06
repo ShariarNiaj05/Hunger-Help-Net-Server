@@ -146,6 +146,18 @@ app.get('/get-food', verify, async (req, res) => {
 
 // -----------:: POST Operation ::----------------
 
+app.post('/add-food', async (req, res) => {
+  try {
+    const addFood = req.body;
+    const result = await foodCollection.insertOne(addFood)
+    res.send(result)
+    
+  } catch (error) {
+    console.log('getting error from post /add-food', error);
+    
+  }
+})
+
 app.post('/request-food', async (req, res) => {
   try {
     const foodRequest = req.body;
@@ -156,6 +168,8 @@ app.post('/request-food', async (req, res) => {
     console.log('getting error from post /request-food', error);
   }
 })
+
+
 
 
 app.post('/access-token', async (req, res) => {
