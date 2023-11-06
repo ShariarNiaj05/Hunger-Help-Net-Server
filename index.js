@@ -207,6 +207,20 @@ app.post('/access-token', async (req, res) => {
 
 // -----------:: DELETE Operation ::----------------
 
+app.delete('/delete-food/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) }
+    const result = await foodCollection.deleteOne(query)
+    res.send(result)
+
+  } catch (error) {
+    console.log('getting error form delete /delete-food/:id', error);
+  }
+
+})
+
+
 app.delete('/cancel-food/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -215,7 +229,7 @@ app.delete('/cancel-food/:id', async (req, res) => {
     res.send(result)
 
   } catch (error) {
-    console.log('getting error form delete /request-food/:id', error);
+    console.log('getting error form delete /cancel-food/:id', error);
   }
 
 })
