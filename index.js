@@ -118,9 +118,10 @@ app.get('/foods/:id', async (req, res) => {
 // user specific getting food 
 app.get('/get-food', verify, async (req, res) => {
   try {
-    const queryEmail = req.query.email;
+    const queryEmail = req.query.queryEmail;
     const tokenEmail = req.user.email;
 
+    console.log('sdfaf',tokenEmail);
    
 
     if (queryEmail !== tokenEmail) {
@@ -132,15 +133,24 @@ app.get('/get-food', verify, async (req, res) => {
       query.email = queryEmail
     }
 
-    const result = await requestCollection.find(query).toArray()
+    const result = await foodCollection.find(query).toArray()
 
-    console.log('sdfaf',query);
+    
 
 
     res.send(result)
   } catch (error) {
     console.log('getting error from post /request-food', error);
   }
+})
+
+app.get('/get-food/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+
+  const result = await foodCollection.findOne(query)
+  console.log(result);
+  res.send(result)
 })
 
 
@@ -175,7 +185,7 @@ app.post('/request-food', async (req, res) => {
 app.post('/access-token', async (req, res) => {
   try {
       const user = req.body
-      console.log(user);
+      console.log('user from post /access-token',user);
       const token = jwt.sign(user, process.env.SECRET, { expiresIn: 360000000 })
       res.cookie('token', token, {
           httpOnly: true,
