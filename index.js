@@ -120,27 +120,17 @@ app.get('/get-food', verify, async (req, res) => {
   try {
     const queryEmail = req.query.queryEmail;
     const tokenEmail = req.user.email;
-
-    console.log('sdfaf',tokenEmail);
-   
-
-    if (queryEmail !== tokenEmail) {
+      if (queryEmail !== tokenEmail) {
       return res.status(403).send({ message: 'Forbidden Access' })
     }
-
     let query = {}
     if (queryEmail) {
       query.email = queryEmail
     }
-
     const result = await foodCollection.find(query).toArray()
-
-    
-
-
     res.send(result)
   } catch (error) {
-    console.log('getting error from post /request-food', error);
+    console.log('getting error from post /get-food', error);
   }
 })
 
@@ -153,6 +143,42 @@ app.get('/get-food/:id', async (req, res) => {
   res.send(result)
 })
 
+app.get('/manage-single-food/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+
+  const result = await foodCollection.findOne(query)
+  console.log("result from manage-single-food",result);
+  res.send(result)
+})
+
+
+
+app.get('/my-food-request', verify, async (req, res) => {
+  try {
+    const queryEmail = req.query.queryEmail;
+    console.log(queryEmail);
+    // const tokenEmail = req.user.email;
+    //   if (queryEmail !== tokenEmail) {
+    //   return res.status(403).send({ message: 'Forbidden Access' })
+    // }
+    // let query = {}
+    // if (queryEmail) {
+    //   query.email = queryEmail
+    // }
+
+
+    const testQuery = {requesterEmail: queryEmail}
+
+
+
+
+    const result = await requestCollection.find(testQuery).toArray()
+    res.send(result)
+  } catch (error) {
+    console.log('getting error from get /my-food-request', error);
+  }
+})
 
 // -----------:: POST Operation ::----------------
 
@@ -216,7 +242,16 @@ app.put('/add-food/:id', async (req, res) => {
 
 
 // -----------:: PATCH Operation ::----------------
+// app.patch('/request-food', async (req, res) => {
+//   try {
+//     const confirmationRequest = req.body;
+    
 
+//     res.send(confirmationRequest)
+//   } catch (error) {
+//     console.log('getting error from patch /request-food', error);
+//   }
+// })
 
 
 // -----------:: DELETE Operation ::----------------
@@ -247,6 +282,9 @@ app.delete('/cancel-food/:id', async (req, res) => {
   }
 
 })
+
+
+
 
 
 
