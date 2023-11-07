@@ -143,8 +143,32 @@ app.get('/get-food/:id', async (req, res) => {
   res.send(result)
 })
 
+app.patch('/get-food/:id', async (req, res) => {
+  // const id = req.params.id;
+  // const query = { _id: new ObjectId(id) }
+  // const result = await foodCollection.findOne(query)
+  const id = req.params.id
+  const query = { _id: new ObjectId(id) }
+  
+  const updateStatus = req.body;
+
+  const updatedDoc = {
+    $set: {
+      foodStatus: updateStatus.foodStatus
+    }
+  }
+
+  const result = await foodCollection.updateOne(query, updatedDoc)
+
+  console.log('updated status id', result );
+
+  res.send(result)
+})
 
 
+// app.patch('/manage/:id', async (req, res) => {
+  
+// })
 
 
 app.get('/manage', async (req, res) => {
@@ -158,7 +182,7 @@ app.get('/manage', async (req, res) => {
 
 
 
-    console.log("result from get /manage", query);
+    
 
   } catch (error) {
     console.log('getting error from get /manage-single-food', error);
