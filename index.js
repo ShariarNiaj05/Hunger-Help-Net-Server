@@ -109,7 +109,7 @@ app.get('/foods', async (req, res) => {
 
 app.get('/foods/:id', async (req, res) => {
   const id = req.params.id;
-  const query = {_id: new ObjectId(id)}
+  const query = { _id: new ObjectId(id) }
   const result = await foodCollection.findOne(query)
   res.send(result)
 })
@@ -120,7 +120,7 @@ app.get('/get-food', verify, async (req, res) => {
   try {
     const queryEmail = req.query.queryEmail;
     const tokenEmail = req.user.email;
-      if (queryEmail !== tokenEmail) {
+    if (queryEmail !== tokenEmail) {
       return res.status(403).send({ message: 'Forbidden Access' })
     }
     let query = {}
@@ -136,13 +136,37 @@ app.get('/get-food', verify, async (req, res) => {
 
 app.get('/get-food/:id', async (req, res) => {
   const id = req.params.id;
-  const query = {_id: new ObjectId(id)}
+  const query = { _id: new ObjectId(id) }
 
   const result = await foodCollection.findOne(query)
-  console.log(result);
+  // console.log(result);
   res.send(result)
 })
 
+
+
+
+
+app.get('/manage', async (req, res) => {
+  try {
+    const query = req.query.foodId
+    // const id = req.params.id;
+    const queryObj = { foodId: (query) }
+
+    const result = await requestCollection.findOne(queryObj)
+    res.send(result)
+
+
+
+    console.log("result from get /manage", query);
+
+  } catch (error) {
+    console.log('getting error from get /manage-single-food', error);
+  }
+})
+
+
+// dont touch it 
 app.get('/manage-single-food/:id', async (req, res) => {
   const id = req.params.id;
   const query = {_id: new ObjectId(id)}
@@ -157,7 +181,7 @@ app.get('/manage-single-food/:id', async (req, res) => {
 app.get('/my-food-request', verify, async (req, res) => {
   try {
     const queryEmail = req.query.queryEmail;
-    console.log(queryEmail);
+    // console.log(queryEmail);
     // const tokenEmail = req.user.email;
     //   if (queryEmail !== tokenEmail) {
     //   return res.status(403).send({ message: 'Forbidden Access' })
@@ -168,7 +192,7 @@ app.get('/my-food-request', verify, async (req, res) => {
     // }
 
 
-    const testQuery = {requesterEmail: queryEmail}
+    const testQuery = { requesterEmail: queryEmail }
 
 
 
@@ -187,10 +211,10 @@ app.post('/add-food', async (req, res) => {
     const addFood = req.body;
     const result = await foodCollection.insertOne(addFood)
     res.send(result)
-    
+
   } catch (error) {
     console.log('getting error from post /add-food', error);
-    
+
   }
 })
 
@@ -210,16 +234,16 @@ app.post('/request-food', async (req, res) => {
 
 app.post('/access-token', async (req, res) => {
   try {
-      const user = req.body
-      console.log('user from post /access-token',user);
-      const token = jwt.sign(user, process.env.SECRET, { expiresIn: 360000000 })
-      res.cookie('token', token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'none'
-      }).send({ success: true })
+    const user = req.body
+    // console.log('user from post /access-token', user);
+    const token = jwt.sign(user, process.env.SECRET, { expiresIn: 360000000 })
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none'
+    }).send({ success: true })
   } catch (error) {
-      console.log('getting error from post /auth/access-token', error);
+    console.log('getting error from post /auth/access-token', error);
   }
 })
 
@@ -228,24 +252,25 @@ app.put('/add-food/:id', async (req, res) => {
   const id = req.params.id
   const body = req.body;
   const query = { _id: new ObjectId(id) }
-  
+
   const updateFood = {
     $set: {
       ...body
     }
   }
-  const option = {upsert: true}
+  const option = { upsert: true }
   const result = await foodCollection.updateOne(query, updateFood, option)
-  console.log(result);
+  // console.log(result);
   res.send(result)
 })
 
 
 // -----------:: PATCH Operation ::----------------
+
 // app.patch('/request-food', async (req, res) => {
 //   try {
 //     const confirmationRequest = req.body;
-    
+
 
 //     res.send(confirmationRequest)
 //   } catch (error) {
