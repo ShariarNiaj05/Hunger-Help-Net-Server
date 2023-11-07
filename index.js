@@ -166,9 +166,21 @@ app.patch('/get-food/:id', async (req, res) => {
 })
 
 
-// app.patch('/manage/:id', async (req, res) => {
+app.patch('/manage/:id', async (req, res) => {
+  const id = req.params.id
+  const {foodId, foodStatus} = req.body
   
-// })
+  const query = { foodId: foodId }
+  
+  const updatedDoc = {
+    $set: {
+      foodStatus: foodStatus
+    }
+  }
+
+  const result = await requestCollection.updateOne(query, updatedDoc)
+  console.log('result form request collected update status',result);
+})
 
 
 app.get('/manage', async (req, res) => {
