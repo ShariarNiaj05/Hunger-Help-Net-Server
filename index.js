@@ -107,7 +107,7 @@ app.get('/foods', async (req, res) => {
 })
 
 
-app.get('/foods/:id', async (req, res) => {
+app.get('/foods/:id',  async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) }
   const result = await foodCollection.findOne(query)
@@ -134,7 +134,7 @@ app.get('/get-food', verify, async (req, res) => {
   }
 })
 
-app.get('/get-food/:id', async (req, res) => {
+app.get('/get-food/:id', verify, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) }
 
@@ -202,7 +202,7 @@ app.get('/manage', async (req, res) => {
 })
 
 
-// dont touch it 
+
 app.get('/manage-single-food/:id', async (req, res) => {
   const id = req.params.id;
   const query = {_id: new ObjectId(id)}
