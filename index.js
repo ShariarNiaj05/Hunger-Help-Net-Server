@@ -214,7 +214,7 @@ app.get('/manage-single-food/:id', async (req, res) => {
 
 
 
-app.get('/my-food-request', verify, async (req, res) => {
+app.get('/my-food-request', async (req, res) => {
   try {
     const queryEmail = req.query.queryEmail;
     // console.log(queryEmail);
